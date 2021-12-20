@@ -53,7 +53,7 @@ COPY ChromeLocal.conf /etc/fonts/local.conf
 
 # Run Chrome as non privileged user
 USER chrome
-ENV url="http://testapp:3001"
+ENV url="http://gui:9000"
  
 # Autorun chrome
 ENTRYPOINT google-chrome $url
