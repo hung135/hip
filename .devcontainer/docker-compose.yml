@@ -47,6 +47,7 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/RunTime
+    # entrypoint: /tmp/src/gui.sh
     entrypoint: /tmp/src/gui.sh
  
   db:

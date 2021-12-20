@@ -23,4 +23,5 @@ RUN locale-gen en_US.UTF-8
 COPY ../ /tmp/src/ 
 WORKDIR /tmp/src/ 
 RUN mvn clean install -DskipTests
+RUN npm install 
  
