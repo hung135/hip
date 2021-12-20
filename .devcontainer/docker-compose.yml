@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  app:
+ 
+    build:
+      extra_hosts:
+        seed: 1.2.3.4
+        tree: 4.3.2.1
+      context: .
+      dockerfile: Dockerfile
+
+      args:
+        # Update 'VARIANT' to pick an LTS version of Node.js: 16, 14, 12.
+        # Append -bullseye or -buster to pin to an OS version.
+        # Use -bullseye variants on local arm64/Apple Silicon.
+        VARIANT: "12"
+ 
+    volumes:
+      - ..:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock 
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    network_mode: service:db
+    # Uncomment the next line to use a non-root user for all processes.
+    # user: node
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally. 
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+    environment:
+      PGHOST: "db" 
+      PGUSER: "gs"
+      PGPASSWORD: "gs"
+      
+
+  backend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/RunTime
+    entrypoint: /tmp/src/backend.sh
+ 
+ 
+  gui:
+    build:
+      context: ..
+      dockerfile: .devcontainer/RunTime
+    entrypoint: /tmp/src/gui.sh
+ 
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    # volumes:
+    #   - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: gs
+      POSTGRES_USER: gs
+      POSTGRES_DB: gs
+    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+  chrome:
+    build:
+      context: .
+      dockerfile: ChromeDockerfile
+    restart: unless-stopped
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      DISPLAY: 192.168.1.51:0 
+      _url: http://gui:9000/
+# volumes:
+#   postgres-data: null
+  consul:
+    extends:
+      file: ../src/main/docker/consul.yml
+      service: consul
+  consul-config-loader:
+    extends:
+      file: ../src/main/docker/consul.yml
+      service: consul-config-loader     
+ 
